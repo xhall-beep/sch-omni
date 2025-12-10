@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCH Omni System Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        h1 { color: #333; }
+        .action-button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        .action-button:hover {
+            background-color: #0056b3;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            white-space: pre-wrap;
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SCH Omni System Dashboard</h1>
+        <p>Backend Status: <span id="backend-status">Connecting...</span></p>
+        
+        <h2>Actions</h2>
+        <button class="action-button" onclick="runAction('auto_sync_payouts')">Auto Sync Payouts</button>
+        <button class="action-button" onclick="runAction('ai_market_analysis')">AI Market Analysis</button>
+        <button class="action-button" onclick="runAction('infinite_powerup')">Infinite Powerup</button>
+
+        <h2>Output</h2>
+        <pre id="status">Click an action button to see the result.</pre>
+    </div>
+
+    <script>
+        const API_URL = '/api/action';
+        const statusElement = document.getElementById('status');
+        const backendStatusElement = document.getElementById('backend-status');
+
+        function updateStatus(message) {
+            statusElement.textContent = JSON.stringify(message, null, 2);
+        }
+
+        function checkBackend() {
+            fetch('/')
+                .then(response => {
+                    if (response.ok) {
+                        backendStatusElement.textContent = 'Operational';
+                        backendStatusElement.style.color = 'green';
+                    } else {
+                        backendStatusElement.textContent = 'Error';
+                        backendStatusElement.style.color = 'red';
+                    }
+                })
+                .catch(error => {
+                    backendStatusElement.textContent = 'Offline';
+                    backendStatusElement.style.color = 'red';
+                    console.error('Backend check failed:', error);
+                });
+        }
+
+        function runAction(actionName) {
+            updateStatus('Executing action: ' + actionName + '...');
+            fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ action: actionName })
+            })
+            .then(response => response.json())
+            .then(data => {
+                updateStatus(data);
+            })
+            .catch(error => {
+                updateStatus({ error: 'Failed to connect to backend', details: error.message });
+                console.error('Action failed:', error);
+            });
+        }
+
+        // Initial check
+        checkBackend();
+        setInterval(checkBackend, 5000); // Check every 5 seconds
+    </script>
+</body>
+</html>
