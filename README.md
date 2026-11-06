@@ -133,3 +133,20 @@ passed**; a live smoke run drove both built-in pipelines over HTTP
 in-process tick, and verified the sealed log at 16 entries. One test
 repair from the first upgrade still stands: the claims check compares
 against the ledger's actual latest row instead of a hardcoded date.
+
+---
+
+## Prerequisites — host layout for estate-data actions (2026-11-06)
+
+The server itself is dependency-free Python 3 standard library and **runs anywhere Python 3 runs**:
+
+```
+python3 server.py --port 8799
+```
+
+However, the estate-data actions (e.g. `hub_status` and the actions that read live estate data) are wired to Montz's estate host layout and need both of these present on the host:
+
+- `~/workspace/bin/ssh-mesh` — helper used to reach the Pixel hub host over SSH
+- `~/workspace/capability-stack/` — the estate data directory the actions read from (`claims.csv`, `sku-map.json`, `releases/`, …)
+
+On any other host the server still starts and serves, but those estate-data actions return source errors (by design — they report rather than stub).
